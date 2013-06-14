@@ -1,1 +1,1 @@
-{"description": "work on estimating the usage of citibike stations", "notebooks": ["jekyll_stations.ipynb", "estimate_usage.ipynb"], "envfile": null, "public": true, "name": "estimate_usage"}
+{"notebooks": ["jekyll_stations.ipynb", "estimate_usage.ipynb"], "envfile": null, "public": true, "name": "estimate_usage", "description": "work on estimating the usage of citibike stations"}
