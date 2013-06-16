@@ -46,21 +46,24 @@ def process_raw_files():
     return df3
 
 def grab_existing():
+    print "start grab_existing", dt.datetime.now()
     df3 = pd.read_csv('full_data.csv', index_col=0, parse_dates=[0])
     return df3
 
 def process_dataframe(input_df):
+    print "start process_dataframe", dt.datetime.now()
     # we need to sort the dataframe so that rows are arranged chronologically
     df = input_df.sort() 
+    print "after sort", dt.datetime.now()
     # diff_df is the change in station occupancy from time period to time period
     diff_df = df.diff()
+    print "after diff", dt.datetime.now()
+    starting_trips = diff_df.where(diff_df > 0).fillna(0)
+    starting_summaries = starting_trips.sum(axis=1)
+    ending_trips = diff_df.where(diff_df < 0).fillna(0)
+    ending_summaries = ending_trips.sum(axis=1)
 
-    def my_sum(row):
-        return row[row >0].sum()
-    starting_trips = diff_df.apply(my_sum, axis=1)
-    def my_sum2(row):
-        return row[row <0].sum()
-    ending_trips = diff_df.apply(my_sum2, axis=1)
+    print "after trips_calcs", dt.datetime.now()
     return StationSummaries(df, diff_df, starting_trips, ending_trips)
 
 
@@ -74,13 +77,11 @@ class StationSummaries(object):
     def __init__(self, df, diff_df, starting_trips, ending_trips):
         self.df, self.diff_df = df, diff_df
         self.starting_trips, self.ending_trips =  starting_trips, ending_trips
-        self.starting_trips2 = self.diff_df.where(self.diff_df > 0)
-        self.starting_trips3 = self.starting_trips2.fillna(0)
 
     def produce_station_stats(self, station_id, now = False):
         if not now:
             now = dt.datetime.now()
-        start_col = self.starting_trips3["%d" % station_id]
+        start_col = self.starting_trips["%d" % station_id]
         hour_df = start_col[now - one_hour:now]
         day_df = start_col[now - one_day:now]
         week_df = start_col[now-one_week:now]
@@ -95,7 +96,7 @@ class StationSummaries(object):
     def produce_station_plots(self, station_id, now = False):
         if not now:
             now = dt.datetime.now()
-        start_col = self.starting_trips3["%d" % station_id]
+        start_col = self.starting_trips["%d" % station_id]
         
         hour_df = start_col[now - one_hour:now]
         day_df = start_col[now - one_day:now]
