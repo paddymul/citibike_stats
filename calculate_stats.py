@@ -97,11 +97,18 @@ class StationSummaries(object):
         if not now:
             now = dt.datetime.now()
         start_col = self.starting_trips["%d" % station_id]
+        available_col = self.df["%d" % station_id]
         
         hour_df = start_col[now - one_hour:now]
         day_df = start_col[now - one_day:now]
         week_df = start_col[now-one_week:now]
         all_df = start_col[now-all_time:now]
+
+
+        a_hour_df = available_col[now - one_hour:now]
+        a_day_df = available_col[now - one_day:now]
+        a_week_df = available_col[now-one_week:now]
+        a_all_df = available_col[now-all_time:now]
         
         directory = "plots/%d" % station_id
         if not os.path.exists(directory):
@@ -110,6 +117,12 @@ class StationSummaries(object):
         self.plot(day_df, "plots/%d/day.png" % station_id)
         self.plot(week_df, "plots/%d/week.png" % station_id)
         self.plot(all_df, "plots/%d/all.png" % station_id)
+
+        self.plot(a_hour_df, "plots/%d/avail_hour.png" % station_id)
+        self.plot(a_day_df, "plots/%d/avail_day.png" % station_id)
+        self.plot(a_week_df, "plots/%d/avail_week.png" % station_id)
+        self.plot(a_all_df, "plots/%d/avail_all.png" % station_id)
+
         self.plot(hour_df.cumsum(), "plots/%d/hour_cumsum.png" % station_id)
         self.plot(day_df.cumsum(), "plots/%d/day_cumsum.png" % station_id)
         self.plot(week_df.cumsum(), "plots/%d/week_cumsum.png" % station_id)
@@ -128,5 +141,5 @@ if __name__ == "__main__":
     ss_dict = {}
 
     print "generating_station_summaries"
-    print ss.produce_station_plots(72, dt.datetime(2013,6,13))
+    print ss.produce_station_plots(363)
 

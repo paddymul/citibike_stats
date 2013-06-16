@@ -59,7 +59,7 @@ def write_html(s, ss):
     env = Environment(loader=FileSystemLoader('templates'))
     template = env.get_template('station.html')
 
-    output_from_parsed_template = template.render(s=s)
+    output_from_parsed_template = template.render(s=s, sbid=stations_by_id)
     # to save the results
     with open("station_html/s%d.html" % s['id'], "wb") as fh:
         fh.write(output_from_parsed_template)
@@ -102,7 +102,8 @@ def write_html(s, ss):
 
 
 def produce_single_summary(k, v, ss):
-    v.update(ss.produce_station_stats(v['id'], dt.datetime(2013,6,13)))
+    v.update(ss.produce_station_stats(v['id']))
+    #ss.produce_station_plots(v['id'])  #, dt.datetime(2013,6,13)))
     complete_summaries[v['id']] = v
     v['fname']= v['stAddress1'].replace(" ", "_").replace("&", "and")
     
@@ -113,12 +114,11 @@ def produce_single_summary(k, v, ss):
 def produce_all_summaries():
 
     for k,v in stations_by_id.items():
-        print "\n\n"
-        print "="*80
-
+     
         if k == 146:
             continue
         try:
+            print k,v['stAddress1']
             produce_single_summary(k,v,ss)
         except Exception, e:
             print "ERROR with k", k
