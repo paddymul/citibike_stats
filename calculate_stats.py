@@ -46,21 +46,24 @@ def process_raw_files():
     return df3
 
 def grab_existing():
+    print "start grab_existing", dt.datetime.now()
     df3 = pd.read_csv('full_data.csv', index_col=0, parse_dates=[0])
     return df3
 
 def process_dataframe(input_df):
+    print "start process_dataframe", dt.datetime.now()
     # we need to sort the dataframe so that rows are arranged chronologically
     df = input_df.sort() 
+    print "after sort", dt.datetime.now()
     # diff_df is the change in station occupancy from time period to time period
     diff_df = df.diff()
+    print "after diff", dt.datetime.now()
+    starting_trips = diff_df.where(diff_df > 0).fillna(0)
+    starting_summaries = starting_trips.sum(axis=1)
+    ending_trips = diff_df.where(diff_df < 0).fillna(0)
+    ending_summaries = ending_trips.sum(axis=1)
 
-    def my_sum(row):
-        return row[row >0].sum()
-    starting_trips = diff_df.apply(my_sum, axis=1)
-    def my_sum2(row):
-        return row[row <0].sum()
-    ending_trips = diff_df.apply(my_sum2, axis=1)
+    print "after trips_calcs", dt.datetime.now()
     return StationSummaries(df, diff_df, starting_trips, ending_trips)
 
 
@@ -75,12 +78,25 @@ class StationSummaries(object):
         self.df, self.diff_df = df, diff_df
         self.starting_trips, self.ending_trips =  starting_trips, ending_trips
 
-
-    def produce_station_plots(self, station_id, output_directory, now = False):
+    def produce_station_stats(self, station_id, now = False):
         if not now:
             now = dt.datetime.now()
-        coll_diff_df = self.diff_df["%d" % station_id]
-        start_col = coll_diff_df[coll_diff_df > 0]
+        start_col = self.starting_trips["%d" % station_id]
+        hour_df = start_col[now - one_hour:now]
+        day_df = start_col[now - one_day:now]
+        week_df = start_col[now-one_week:now]
+        all_df = start_col[now-all_time:now]
+        summary_stats = dict(
+            hour_starting_trips=hour_df.sum(),
+            day_starting_trips=day_df.sum(),
+            week_starting_trips=week_df.sum(),
+            all_time_starting_trips=all_df.sum())
+        return summary_stats
+
+    def produce_station_plots(self, station_id, now = False):
+        if not now:
+            now = dt.datetime.now()
+        start_col = self.starting_trips["%d" % station_id]
         
         hour_df = start_col[now - one_hour:now]
         day_df = start_col[now - one_day:now]
@@ -98,12 +114,6 @@ class StationSummaries(object):
         self.plot(day_df.cumsum(), "plots/%d/day_cumsum.png" % station_id)
         self.plot(week_df.cumsum(), "plots/%d/week_cumsum.png" % station_id)
         self.plot(all_df.cumsum(), "plots/%d/all_cumsum.png" % station_id)
-        summary_stats = dict(
-            hour_starting_trips=hour_df.sum(),
-            day_starting_trips=day_df.sum(),
-            week_starting_trips=week_df.sum(),
-            all_time_starting_trips=all_df.sum())
-        return summary_stats
 
     def plot(self, df, fname):
         fig=plt.figure()
@@ -111,11 +121,12 @@ class StationSummaries(object):
         ax.plot(df.index,df)
         fig.autofmt_xdate()
         fig.savefig(fname)
+        fig.clf()
 
 if __name__ == "__main__":
     ss = process_dataframe(grab_existing())
     ss_dict = {}
 
     print "generating_station_summaries"
-    print ss.produce_station_plots(72, "stations", dt.datetime(2013,6,13))
+    print ss.produce_station_plots(72, dt.datetime(2013,6,13))
 

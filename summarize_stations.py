@@ -53,52 +53,65 @@ from jinja2 import Environment, FileSystemLoader
 import calculate_stats
 import datetime as dt
 
+complete_summaries = {}
+
 def write_html(s, ss):
     env = Environment(loader=FileSystemLoader('templates'))
     template = env.get_template('station.html')
-
-    s.update(ss.produce_station_plots(s['id'], 'foo', dt.datetime(2013,6,13)))
 
     output_from_parsed_template = template.render(s=s)
     # to save the results
     with open("station_html/s%d.html" % s['id'], "wb") as fh:
         fh.write(output_from_parsed_template)
-#
-# In [4]: stations_by_id[528]
-# Out[4]: 
-# {u'altitude': u'',
-#  u'availableBikes': 11,
-#  u'availableDocks': 27,
+
+# {'all_time_starting_trips': 295.0,
+#  u'altitude': u'',
+#  u'availableBikes': 21,
+#  u'availableDocks': 14,
 #  u'city': u'',
-#  u'id': 528,
+#  'closest_stations': [72,
+#   480,
+#   508,
+#   495,],
+#  'day_starting_trips': 68.0,
+#  'hour_starting_trips': 0,
+#  u'id': 72,
 #  u'landMark': u'',
 #  u'lastCommunicationTime': None,
-#  u'latitude': 40.74290902,
+#  u'latitude': 40.76727216,
 #  u'location': u'',
-#  u'longitude': -73.97706058,
+#  u'longitude': -73.99392888,
 #  u'postalCode': u'',
-#  u'stAddress1': u'2 Av & E 30 St',
+#  u'stAddress1': u'W 52 St & 11 Av',
 #  u'stAddress2': u'',
-#  u'stationName': u'2 Av & E 30 St',
+#  u'stationName': u'W 52 St & 11 Av',
+#  'station_distances': {72: 0.0,
+#   79: 5.461241129523938,
+#   82: 6.259903786989711,
+#   83: 9.396643395659359,
+#   116: 2.905835095023139,
+#   119: 8.02767027885375,
+#   120: 9.415747374933149},
 #  u'statusKey': 1,
 #  u'statusValue': u'In Service',
 #  u'testStation': False,
-# u'totalDocks': 39}
+#  u'totalDocks': 39,
+#  'week_starting_trips': 295.0}
 
 
 
 
 def produce_single_summary(k, v, ss):
+    v.update(ss.produce_station_stats(v['id'], dt.datetime(2013,6,13)))
+    complete_summaries[v['id']] = v
+    v['fname']= v['stAddress1'].replace(" ", "_").replace("&", "and")
+    
 
-    s1 = stations_by_id[v['closest_stations'][1]]
-    print k, s1['id'], s1['stAddress1'], v['station_distances'][v['closest_stations'][1]]
-    s2 = stations_by_id[v['closest_stations'][2]]
-    print k, s2['id'], s2['stAddress1'], v['station_distances'][v['closest_stations'][2]]
-    s3 = stations_by_id[v['closest_stations'][3]]
-    print k, s3['id'], s3['stAddress1'], v['station_distances'][v['closest_stations'][3]]
+
     write_html(v, ss)
 
 def produce_all_summaries():
+
     for k,v in stations_by_id.items():
         print "\n\n"
         print "="*80
