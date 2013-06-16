@@ -136,23 +136,23 @@ class StationSummaries(object):
         a_week_df = available_col[now-one_week:now]
         a_all_df = available_col[now-all_time:now]
         
-        directory = "plots/%d" % station_id
+        directory = "site_root/plots/%d" % station_id
         if not os.path.exists(directory):
             os.makedirs(directory)
-        self.plot(hour_df, "plots/%d/hour.png" % station_id)
-        self.plot(day_df, "plots/%d/day.png" % station_id)
-        self.plot(week_df, "plots/%d/week.png" % station_id)
-        self.plot(all_df, "plots/%d/all.png" % station_id)
+        self.plot(hour_df, "site_root/plots/%d/hour.png" % station_id)
+        self.plot(day_df, "site_root/plots/%d/day.png" % station_id)
+        self.plot(week_df, "site_root/plots/%d/week.png" % station_id)
+        self.plot(all_df, "site_root/plots/%d/all.png" % station_id)
 
-        self.plot(a_hour_df, "plots/%d/avail_hour.png" % station_id)
-        self.plot(a_day_df, "plots/%d/avail_day.png" % station_id)
-        self.plot(a_week_df, "plots/%d/avail_week.png" % station_id)
-        self.plot(a_all_df, "plots/%d/avail_all.png" % station_id)
+        self.plot(a_hour_df, "site_root/plots/%d/avail_hour.png" % station_id)
+        self.plot(a_day_df, "site_root/plots/%d/avail_day.png" % station_id)
+        self.plot(a_week_df, "site_root/plots/%d/avail_week.png" % station_id)
+        self.plot(a_all_df, "site_root/plots/%d/avail_all.png" % station_id)
 
-        self.plot(hour_df.cumsum(), "plots/%d/hour_cumsum.png" % station_id)
-        self.plot(day_df.cumsum(), "plots/%d/day_cumsum.png" % station_id)
-        self.plot(week_df.cumsum(), "plots/%d/week_cumsum.png" % station_id)
-        self.plot(all_df.cumsum(), "plots/%d/all_cumsum.png" % station_id)
+        self.plot(hour_df.cumsum(), "site_root/plots/%d/hour_cumsum.png" % station_id)
+        self.plot(day_df.cumsum(), "site_root/plots/%d/day_cumsum.png" % station_id)
+        self.plot(week_df.cumsum(), "site_root/plots/%d/week_cumsum.png" % station_id)
+        self.plot(all_df.cumsum(), "site_root/plots/%d/all_cumsum.png" % station_id)
 
     def plot(self, df, fname):
         fig=plt.figure()

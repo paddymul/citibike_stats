@@ -34,7 +34,7 @@
     <h2> closest stations </h2>
     <ul>
       {% for station_id in s.closest_stations[1:4] %}
-        <li><a href="./s{{station_id}}.html">{{station_id}} {{sbid[station_id]['stAddress1']}}</a></li>
+        <li><a href="s{{station_id}}.html">{{station_id}} {{sbid[station_id]['stAddress1']}}</a></li>
       {% endfor %}
     </ul>
 

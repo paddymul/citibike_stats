@@ -11,7 +11,7 @@
         <ul>
           {% for station_id in station_list[0:10] %}
             {% if sbid[station_id] is defined %}
-              <li><a href="./s{{station_id}}.html">{{station_id}} {{sbid[station_id]['stAddress1']}}</a></li>
+              <li><a href="/stations/s{{station_id}}.html">{{station_id}} {{sbid[station_id]['stAddress1']}}</a></li>
             {% endif %}
           {% endfor %}
         </ul>

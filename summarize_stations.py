@@ -98,8 +98,8 @@ def write_station_html(s):
 
     output_from_parsed_template = template.render(s=s, sbid=stations_by_id)
     # to save the results
-    with open("station_html/s%d.html" % s['id'], "wb") as fh:
-        fh.write(output_from_parsed_template)
+    with open("site_root/stations/s%d.html" % s['id'], "wb") as fh:
+        fh.write(output_from_parsed_template.encode('utf-8'))
 
 def write_system_html(s):
     env = Environment(loader=FileSystemLoader('templates'))
@@ -107,7 +107,7 @@ def write_system_html(s):
 
     output_from_parsed_template = template.render(s=s, sbid=stations_by_id)
     # to save the results
-    with open("station_html/index.html", "wb") as fh:
+    with open("site_root/index.html", "wb") as fh:
         fh.write(output_from_parsed_template.encode('utf-8'))
 
 
