@@ -74,13 +74,14 @@ class StationSummaries(object):
     def __init__(self, df, diff_df, starting_trips, ending_trips):
         self.df, self.diff_df = df, diff_df
         self.starting_trips, self.ending_trips =  starting_trips, ending_trips
-
+        self.starting_trips2 = self.diff_df.where(self.diff_df > 0)
+        self.starting_trips2.fillna(0)
 
     def produce_station_plots(self, station_id, output_directory, now = False):
         if not now:
             now = dt.datetime.now()
-        coll_diff_df = self.diff_df["%d" % station_id]
-        start_col = coll_diff_df[coll_diff_df > 0]
+        start_col = self.starting_trips2["%d" % station_id]
+        #start_col = coll_diff_df[coll_diff_df > 0]
         
         hour_df = start_col[now - one_hour:now]
         day_df = start_col[now - one_day:now]
