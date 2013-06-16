@@ -1,0 +1,22 @@
+<html>
+
+  <head>
+  </head>
+  <body>
+    <h1> system summary </h1>
+
+
+      {% for time_period, station_list in s.popular_starting_stations.items() %}
+        <h2> {{time_period }} </h2>
+        <ul>
+          {% for station_id in station_list[0:10] %}
+            {% if sbid[station_id] is defined %}
+              <li><a href="./s{{station_id}}.html">{{station_id}} {{sbid[station_id]['stAddress1']}}</a></li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+     {% endfor %}
+
+
+  </body>
+</html>

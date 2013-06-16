@@ -55,15 +55,6 @@ import datetime as dt
 
 complete_summaries = {}
 
-def write_html(s, ss):
-    env = Environment(loader=FileSystemLoader('templates'))
-    template = env.get_template('station.html')
-
-    output_from_parsed_template = template.render(s=s, sbid=stations_by_id)
-    # to save the results
-    with open("station_html/s%d.html" % s['id'], "wb") as fh:
-        fh.write(output_from_parsed_template)
-
 # {'all_time_starting_trips': 295.0,
 #  u'altitude': u'',
 #  u'availableBikes': 21,
@@ -101,15 +92,31 @@ def write_html(s, ss):
 
 
 
-def produce_single_summary(k, v, ss):
+def write_station_html(s):
+    env = Environment(loader=FileSystemLoader('templates'))
+    template = env.get_template('station.html')
+
+    output_from_parsed_template = template.render(s=s, sbid=stations_by_id)
+    # to save the results
+    with open("station_html/s%d.html" % s['id'], "wb") as fh:
+        fh.write(output_from_parsed_template)
+
+def write_system_html(s):
+    env = Environment(loader=FileSystemLoader('templates'))
+    template = env.get_template('index.html')
+
+    output_from_parsed_template = template.render(s=s, sbid=stations_by_id)
+    # to save the results
+    with open("station_html/index.html", "wb") as fh:
+        fh.write(output_from_parsed_template.encode('utf-8'))
+
+
+def produce_single_summary(v):
     v.update(ss.produce_station_stats(v['id']))
     #ss.produce_station_plots(v['id'])  #, dt.datetime(2013,6,13)))
     complete_summaries[v['id']] = v
     v['fname']= v['stAddress1'].replace(" ", "_").replace("&", "and")
-    
-
-
-    write_html(v, ss)
+    write_station_html(v)
 
 def produce_all_summaries():
 
@@ -119,17 +126,19 @@ def produce_all_summaries():
             continue
         try:
             print k,v['stAddress1']
-            produce_single_summary(k,v,ss)
+            produce_single_summary(v)
         except Exception, e:
             print "ERROR with k", k
             print e
 
 stations_by_id = write_data_file()
 ss = calculate_stats.process_dataframe(calculate_stats.grab_existing())
+s_stats = ss.produce_system_stats()
 if __name__ == "__main__":
     #produce_single_summary(448, stations_by_id[448], ss)
     start_dt = dt.datetime.now()
     print "START DT", start_dt
+    write_system_html(s_stats)
     produce_all_summaries()
     end_dt = dt.datetime.now()
     print "END_DT", end_dt, end_dt - start_dt
