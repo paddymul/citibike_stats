@@ -77,7 +77,7 @@ class StationSummaries(object):
         self.starting_trips2 = self.diff_df.where(self.diff_df > 0)
         self.starting_trips3 = self.starting_trips2.fillna(0)
 
-    def produce_station_stats(self, station_id, output_directory, now = False):
+    def produce_station_stats(self, station_id, now = False):
         if not now:
             now = dt.datetime.now()
         start_col = self.starting_trips3["%d" % station_id]
@@ -92,7 +92,7 @@ class StationSummaries(object):
             all_time_starting_trips=all_df.sum())
         return summary_stats
 
-    def produce_station_plots(self, station_id, output_directory, now = False):
+    def produce_station_plots(self, station_id, now = False):
         if not now:
             now = dt.datetime.now()
         start_col = self.starting_trips3["%d" % station_id]
@@ -127,5 +127,5 @@ if __name__ == "__main__":
     ss_dict = {}
 
     print "generating_station_summaries"
-    print ss.produce_station_plots(72, "stations", dt.datetime(2013,6,13))
+    print ss.produce_station_plots(72, dt.datetime(2013,6,13))
 

@@ -57,7 +57,7 @@ def write_html(s, ss):
     env = Environment(loader=FileSystemLoader('templates'))
     template = env.get_template('station.html')
 
-    s.update(ss.produce_station_plots(s['id'], 'foo', dt.datetime(2013,6,13)))
+    s.update(ss.produce_station_stats(s['id'], dt.datetime(2013,6,13)))
 
     output_from_parsed_template = template.render(s=s)
     # to save the results
