@@ -75,13 +75,27 @@ class StationSummaries(object):
         self.df, self.diff_df = df, diff_df
         self.starting_trips, self.ending_trips =  starting_trips, ending_trips
         self.starting_trips2 = self.diff_df.where(self.diff_df > 0)
-        self.starting_trips2.fillna(0)
+        self.starting_trips3 = self.starting_trips2.fillna(0)
+
+    def produce_station_stats(self, station_id, output_directory, now = False):
+        if not now:
+            now = dt.datetime.now()
+        start_col = self.starting_trips3["%d" % station_id]
+        hour_df = start_col[now - one_hour:now]
+        day_df = start_col[now - one_day:now]
+        week_df = start_col[now-one_week:now]
+        all_df = start_col[now-all_time:now]
+        summary_stats = dict(
+            hour_starting_trips=hour_df.sum(),
+            day_starting_trips=day_df.sum(),
+            week_starting_trips=week_df.sum(),
+            all_time_starting_trips=all_df.sum())
+        return summary_stats
 
     def produce_station_plots(self, station_id, output_directory, now = False):
         if not now:
             now = dt.datetime.now()
-        start_col = self.starting_trips2["%d" % station_id]
-        #start_col = coll_diff_df[coll_diff_df > 0]
+        start_col = self.starting_trips3["%d" % station_id]
         
         hour_df = start_col[now - one_hour:now]
         day_df = start_col[now - one_day:now]
@@ -99,12 +113,6 @@ class StationSummaries(object):
         self.plot(day_df.cumsum(), "plots/%d/day_cumsum.png" % station_id)
         self.plot(week_df.cumsum(), "plots/%d/week_cumsum.png" % station_id)
         self.plot(all_df.cumsum(), "plots/%d/all_cumsum.png" % station_id)
-        summary_stats = dict(
-            hour_starting_trips=hour_df.sum(),
-            day_starting_trips=day_df.sum(),
-            week_starting_trips=week_df.sum(),
-            all_time_starting_trips=all_df.sum())
-        return summary_stats
 
     def plot(self, df, fname):
         fig=plt.figure()
@@ -112,6 +120,7 @@ class StationSummaries(object):
         ax.plot(df.index,df)
         fig.autofmt_xdate()
         fig.savefig(fname)
+        fig.clf()
 
 if __name__ == "__main__":
     ss = process_dataframe(grab_existing())
