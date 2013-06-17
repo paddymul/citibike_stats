@@ -140,7 +140,6 @@ complete_summaries = {}
 def write_station_html(s):
     env = Environment(loader=FileSystemLoader('templates'))
     template = env.get_template('station.html')
-
     output_from_parsed_template = template.render(s=s, sbid=stations_by_id)
     # to save the results
     with open("site_root/stations/s%d.html" % s['id'], "wb") as fh:
@@ -159,13 +158,24 @@ def write_system_html(s, stations_by_id):
 
 
 def produce_single_summary(v):
-    v.update(ss.produce_station_stats(v['id']))
+
     complete_summaries[v['id']] = v
     v['fname']= v['stAddress1'].replace(" ", "_").replace("&", "and")
+
     write_station_html(v)
 
-def produce_all_summaries():
+def update_summaries():
+    for k,v in stations_by_id.items():
+        if k == 146:
+            continue
+        try:
+            v.update(ss.produce_station_stats(v['id']))
+        except Exception, e:
+            print "ERROR with k", k
+            print e
 
+def produce_all_summaries():
+    write_system_html(s_stats, stations_by_id)
     for k,v in stations_by_id.items():
         if k == 146:
             continue
@@ -175,7 +185,8 @@ def produce_all_summaries():
         except Exception, e:
             print "ERROR with k", k
             print e
-    write_system_html(s_stats, stations_by_id)
+
+
 def produce_all_plots():
     for k,v in stations_by_id.items():
         if k == 146:
@@ -200,6 +211,7 @@ if run_from_ipython():
     stations_by_id = write_data_file()
     ss = calculate_stats.process_dataframe(calculate_stats.grab_existing())
     s_stats = ss.produce_system_stats()
+    update_summaries()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Description of your program')
@@ -227,6 +239,7 @@ if __name__ == "__main__":
         stations_by_id = write_data_file()
         ss = calculate_stats.process_dataframe(calculate_stats.grab_existing())
         s_stats = ss.produce_system_stats()
+        update_summaries()
     if args.summarize:
         produce_all_summaries()
     if args.plot:

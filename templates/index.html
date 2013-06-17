@@ -122,19 +122,39 @@ google.maps.event.addDomListener(window, 'load', initialize);
     <h1> system summary </h1>
 
 
-      {% for time_period, station_list in s.popular_starting_stations.items() %}
-        <h2> most active stations in past {{time_period }} </h2>
-        <ul>
-          {% for station_id in station_list[0:10] %}
+        <h2> most active stations in past day </h2>
+
+          {% for station_id in s.popular_starting_stations['day'][-10:] %}
             {% if sbid[station_id] is defined %}
               <li>
                 <a href="/stations/s{{station_id}}.html">{{sbid[station_id]['stAddress1']}}</a>
-                {{sbid[station_id]['starting'][time_period]}} <span> rips </span>
+                {{sbid[station_id]['starting']['day']}} <span> trips </span>
               </li>
             {% endif %}
           {% endfor %}
         </ul>
-     {% endfor %}
+        <h2> most active stations in past week </h2>
+
+          {% for station_id in s.popular_starting_stations['week'][-10:] %}
+            {% if sbid[station_id] is defined %}
+              <li>
+                <a href="/stations/s{{station_id}}.html">{{sbid[station_id]['stAddress1']}}</a>
+                {{sbid[station_id]['starting']['week']}} <span> trips </span>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+        <h2> most active over whole life of the system </h2>
+
+          {% for station_id in s.popular_starting_stations['all'][-10:] %}
+            {% if sbid[station_id] is defined %}
+              <li>
+                <a href="/stations/s{{station_id}}.html">{{sbid[station_id]['stAddress1']}}</a>
+                {{sbid[station_id]['starting']['all']}} <span> trips </span>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
 
 
   </body>
