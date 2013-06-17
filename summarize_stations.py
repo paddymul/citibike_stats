@@ -166,6 +166,26 @@ def upload_to_s3():
             k.set_contents_from_filename(full_path)
             k.set_acl('public-read')
 
+def upload_html():
+    secret_key = json.loads(open(os.path.expanduser(
+        "~/.ec2/s3_credentials.json")).read())
+
+    conn = S3Connection(*secret_key.items()[0])
+    bucket = conn.get_bucket("citibikedata-www")
+
+    walk_obj = os.walk('site_root')
+    for dir_path, unused, filenames in walk_obj:
+        for fname in filenames:
+            full_path = os.path.join(dir_path, fname)
+            #only upload the html
+            if 'plots' in full_path:
+                continue
+            k = Key(bucket)
+            k.key = full_path[10:]  #strip off the site_root/
+            print full_path
+            k.set_contents_from_filename(full_path)
+            k.set_acl('public-read')
+
 if __name__ == "__2main__":
     #produce_single_summary(448, stations_by_id[448], ss)
     start_dt = dt.datetime.now()
