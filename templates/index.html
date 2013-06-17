@@ -81,7 +81,7 @@ google.maps.event.addDomListener(window, 'load', initialize);
             <dt>long</dt><dd>{{sbid[station_id]['longitude']}}</dd>
           </dl>
           {% for station_id in sbid[station_id].closest_stations[1:4] %}
-            <li><a href="/stations/s{{station_id}}.html">{{station_id}} {{sbid[station_id]['stAddress1']}}</a></li>
+            <li><a href="/stations/s{{station_id}}.html"> {{sbid[station_id]['stAddress1']}}</a></li>
           {% endfor %}
         </div>
 
