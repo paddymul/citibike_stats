@@ -1,5 +1,17 @@
+
+from jinja2 import Environment, FileSystemLoader
+import calculate_stats
+import datetime as dt
+
 from collections import defaultdict
 import json
+
+from boto.s3.connection import S3Connection
+from boto.s3.key import Key
+import json
+import os
+
+import argparse
 example_stations_by_time = defaultdict(dict)
 def pandas_process_file(fname, field_name="availableDocks", collection_dict=example_stations_by_time):
     stats = json.loads(open(fname).read())
@@ -48,10 +60,6 @@ def distance(lat1, lon1, lat2, lon2):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
     d = radius * c
     return d
-
-from jinja2 import Environment, FileSystemLoader
-import calculate_stats
-import datetime as dt
 
 complete_summaries = {}
 
@@ -115,15 +123,12 @@ def write_system_html(s, stations_by_id):
 
 def produce_single_summary(v):
     v.update(ss.produce_station_stats(v['id']))
-    #ss.produce_station_plots(v['id'])  #, dt.datetime(2013,6,13)))
     complete_summaries[v['id']] = v
     v['fname']= v['stAddress1'].replace(" ", "_").replace("&", "and")
     write_station_html(v)
 
 def produce_all_summaries():
-
     for k,v in stations_by_id.items():
-     
         if k == 146:
             continue
         try:
@@ -133,10 +138,35 @@ def produce_all_summaries():
             print "ERROR with k", k
             print e
 
-stations_by_id = write_data_file()
-ss = calculate_stats.process_dataframe(calculate_stats.grab_existing())
-s_stats = ss.produce_system_stats()
-if __name__ == "__main__":
+def produce_all_plots():
+    for k,v in stations_by_id.items():
+        if k == 146:
+            continue
+        try:
+            print k,v['stAddress1']
+            ss.produce_station_plots(v['id'])  
+        except Exception, e:
+            print "ERROR with k", k
+            print e
+
+def upload_to_s3():
+    secret_key = json.loads(open(os.path.expanduser(
+        "~/.ec2/s3_credentials.json")).read())
+
+    conn = S3Connection(*secret_key.items()[0])
+    bucket = conn.get_bucket("citibikedata-www")
+
+    walk_obj = os.walk('site_root')
+    for dir_path, unused, filenames in walk_obj:
+        for fname in filenames:
+            full_path = os.path.join(dir_path, fname)
+            k = Key(bucket)
+            k.key = full_path[10:]  #strip off the site_root/
+            print full_path
+            k.set_contents_from_filename(full_path)
+            k.set_acl('public-read')
+
+if __name__ == "__2main__":
     #produce_single_summary(448, stations_by_id[448], ss)
     start_dt = dt.datetime.now()
     print "START DT", start_dt
@@ -144,4 +174,34 @@ if __name__ == "__main__":
     write_system_html(s_stats, stations_by_id)
     end_dt = dt.datetime.now()
     print "END_DT", end_dt, end_dt - start_dt
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Description of your program')
+    parser.add_argument('-s','--summarize', default=False, action="store_true",
+                        help='summarize the stations, build the html files')
+
+    parser.add_argument('-p','--plot', default=False, action="store_true",
+                        help='construct the plots')
+    parser.add_argument('-u','--upload', default=False, action="store_true",
+                        help='upload the stations to s3')
+    parser.add_argument('-y','--upload_plots', default=False, action="store_true",
+                        help='upload the site_root to s3, including the plots')
+
+    args = parser.parse_args()
+    import pdb
+    #pdb.set_trace()
+    if args.summarize or args.plot:
+
+        stations_by_id = write_data_file()
+        ss = calculate_stats.process_dataframe(calculate_stats.grab_existing())
+        s_stats = ss.produce_system_stats()
+    if args.summarize:
+        produce_all_summaries()
+    if args.plot:
+        produce_all_plots()
+    if args.upload:
+        upload_html()
+    if args.upload_plots:
+        upload_to_s3()
+    
 
