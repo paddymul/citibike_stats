@@ -58,9 +58,9 @@ def process_dataframe(input_df):
     # diff_df is the change in station occupancy from time period to time period
     diff_df = df.diff()
     print "after diff", dt.datetime.now()
-    starting_trips = diff_df.where(diff_df > 0).fillna(0)
+    starting_trips = diff_df.where(diff_df < 0).fillna(0)
     starting_summaries = starting_trips.sum(axis=1)
-    ending_trips = diff_df.where(diff_df < 0).fillna(0)
+    ending_trips = diff_df.where(diff_df > 0).fillna(0)
     ending_summaries = ending_trips.sum(axis=1)
 
     print "after trips_calcs", dt.datetime.now()
