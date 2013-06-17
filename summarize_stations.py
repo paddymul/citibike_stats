@@ -140,8 +140,8 @@ if __name__ == "__main__":
     #produce_single_summary(448, stations_by_id[448], ss)
     start_dt = dt.datetime.now()
     print "START DT", start_dt
-    write_system_html(s_stats, stations_by_id)
     produce_all_summaries()
+    write_system_html(s_stats, stations_by_id)
     end_dt = dt.datetime.now()
     print "END_DT", end_dt, end_dt - start_dt
 
