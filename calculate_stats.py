@@ -91,36 +91,11 @@ class StationSummaries(object):
         week_df = start_col[now-one_week:now]
         all_df = start_col[now-all_time:now]
         summary_stats = dict(
-            hour_starting_trips=hour_df.sum(),
-            day_starting_trips=day_df.sum(),
-            week_starting_trips=week_df.sum(),
-            all_time_starting_trips=all_df.sum())
-        return summary_stats
-
-
-    def produce_system_stats(self, now = False):
-
-        if not now:
-            now = dt.datetime.now()
-
-        base_starts = dict(
-            hour=self.starting_trips[now - one_hour:now],
-            day=self.starting_trips[now - one_day:now],
-            week=self.starting_trips[now-one_week:now],
-            all=self.starting_trips[now-all_time:now])
-        station_sums = dict(
-            #hour= base_starts['hour'].sum(),
-            day=base_starts['day'].sum(),
-            week=base_starts['week'].sum(),
-            all=base_starts['all'].sum())
-        sorted_sums = dict([[k, v.sort(axis=1)] for k,v in station_sums.items()])
-        popular_starting_stations = dict(
-            [[k, v.index.tolist()] for k,v in station_sums.items()])
-        [[k, v.reverse()] for k,v in  popular_starting_stations.items()]
-        popular_starting_stations2 = dict(
-                [[k, map(int, v)] for k,v in  popular_starting_stations.items()])
-        summary_stats = dict(
-            popular_starting_stations=popular_starting_stations2)
+            starting = dict(
+                hour=hour_df.sum(),
+                day=day_df.sum(),
+                week=week_df.sum(),
+                all=all_df.sum()))
         return summary_stats
 
     def produce_station_plots(self, station_id, now = False):
@@ -157,6 +132,33 @@ class StationSummaries(object):
         self.plot(day_df.cumsum(), "site_root/plots/%d/day_cumsum.png" % station_id)
         self.plot(week_df.cumsum(), "site_root/plots/%d/week_cumsum.png" % station_id)
         self.plot(all_df.cumsum(), "site_root/plots/%d/all_cumsum.png" % station_id)
+
+
+    def produce_system_stats(self, now = False):
+
+        if not now:
+            now = dt.datetime.now()
+
+        base_starts = dict(
+            hour=self.starting_trips[now - one_hour:now],
+            day=self.starting_trips[now - one_day:now],
+            week=self.starting_trips[now-one_week:now],
+            all=self.starting_trips[now-all_time:now])
+        station_sums = dict(
+            #hour= base_starts['hour'].sum(),
+            day=base_starts['day'].sum(),
+            week=base_starts['week'].sum(),
+            all=base_starts['all'].sum())
+        sorted_sums = dict([[k, v.sort(axis=1)] for k,v in station_sums.items()])
+        popular_starting_stations = dict(
+            [[k, v.index.tolist()] for k,v in station_sums.items()])
+        [[k, v.reverse()] for k,v in  popular_starting_stations.items()]
+        popular_starting_stations2 = dict(
+                [[k, map(int, v)] for k,v in  popular_starting_stations.items()])
+        summary_stats = dict(
+            popular_starting_stations=popular_starting_stations2)
+        return summary_stats
+
 
     def plot(self, df, fname):
         import matplotlib.pyplot as plt

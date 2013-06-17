@@ -61,6 +61,43 @@ def distance(lat1, lon1, lat2, lon2):
     d = radius * c
     return d
 
+def upload_to_s3():
+    secret_key = json.loads(open(os.path.expanduser(
+        "~/.ec2/s3_credentials.json")).read())
+
+    conn = S3Connection(*secret_key.items()[0])
+    bucket = conn.get_bucket("citibikedata.com")
+
+    walk_obj = os.walk('site_root')
+    for dir_path, unused, filenames in walk_obj:
+        for fname in filenames:
+            full_path = os.path.join(dir_path, fname)
+            k = Key(bucket)
+            k.key = full_path[10:]  #strip off the site_root/
+            print full_path
+            k.set_contents_from_filename(full_path)
+            k.set_acl('public-read')
+
+def upload_html():
+    secret_key = json.loads(open(os.path.expanduser(
+        "~/.ec2/s3_credentials.json")).read())
+
+    conn = S3Connection(*secret_key.items()[0])
+    bucket = conn.get_bucket("citibikedata.com")
+
+    walk_obj = os.walk('site_root')
+    for dir_path, unused, filenames in walk_obj:
+        for fname in filenames:
+            full_path = os.path.join(dir_path, fname)
+            #only upload the html
+            if 'plots' in full_path:
+                continue
+            k = Key(bucket)
+            k.key = full_path[10:]  #strip off the site_root/
+            print full_path
+            k.set_contents_from_filename(full_path)
+            k.set_acl('public-read')
+
 complete_summaries = {}
 
 # {'all_time_starting_trips': 295.0,
@@ -128,6 +165,7 @@ def produce_single_summary(v):
     write_station_html(v)
 
 def produce_all_summaries():
+
     for k,v in stations_by_id.items():
         if k == 146:
             continue
@@ -137,7 +175,7 @@ def produce_all_summaries():
         except Exception, e:
             print "ERROR with k", k
             print e
-
+    write_system_html(s_stats, stations_by_id)
 def produce_all_plots():
     for k,v in stations_by_id.items():
         if k == 146:
@@ -149,51 +187,19 @@ def produce_all_plots():
             print "ERROR with k", k
             print e
 
-def upload_to_s3():
-    secret_key = json.loads(open(os.path.expanduser(
-        "~/.ec2/s3_credentials.json")).read())
 
-    conn = S3Connection(*secret_key.items()[0])
-    bucket = conn.get_bucket("citibikedata-www")
 
-    walk_obj = os.walk('site_root')
-    for dir_path, unused, filenames in walk_obj:
-        for fname in filenames:
-            full_path = os.path.join(dir_path, fname)
-            k = Key(bucket)
-            k.key = full_path[10:]  #strip off the site_root/
-            print full_path
-            k.set_contents_from_filename(full_path)
-            k.set_acl('public-read')
+def run_from_ipython():
+    try:
+        __IPYTHON__
+        return True
+    except NameError:
+        return False
 
-def upload_html():
-    secret_key = json.loads(open(os.path.expanduser(
-        "~/.ec2/s3_credentials.json")).read())
-
-    conn = S3Connection(*secret_key.items()[0])
-    bucket = conn.get_bucket("citibikedata-www")
-
-    walk_obj = os.walk('site_root')
-    for dir_path, unused, filenames in walk_obj:
-        for fname in filenames:
-            full_path = os.path.join(dir_path, fname)
-            #only upload the html
-            if 'plots' in full_path:
-                continue
-            k = Key(bucket)
-            k.key = full_path[10:]  #strip off the site_root/
-            print full_path
-            k.set_contents_from_filename(full_path)
-            k.set_acl('public-read')
-
-if __name__ == "__2main__":
-    #produce_single_summary(448, stations_by_id[448], ss)
-    start_dt = dt.datetime.now()
-    print "START DT", start_dt
-    produce_all_summaries()
-    write_system_html(s_stats, stations_by_id)
-    end_dt = dt.datetime.now()
-    print "END_DT", end_dt, end_dt - start_dt
+if run_from_ipython():
+    stations_by_id = write_data_file()
+    ss = calculate_stats.process_dataframe(calculate_stats.grab_existing())
+    s_stats = ss.produce_system_stats()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Description of your program')
@@ -208,12 +214,15 @@ if __name__ == "__main__":
     parser.add_argument('-y','--upload_plots', default=False, action="store_true",
                         help='upload the site_root to s3, including the plots')
 
+    parser.add_argument('-i','--interactive', default=False, action="store_true",
+                        help='just produce summary data objects for ipython interogation')
+
     args = parser.parse_args()
 
 
     if args.data_collect:
         calculate_stats.process_raw_files()
-    if args.summarize or args.plot:
+    if args.summarize or args.plot or args.interactive:
 
         stations_by_id = write_data_file()
         ss = calculate_stats.process_dataframe(calculate_stats.grab_existing())
@@ -226,5 +235,6 @@ if __name__ == "__main__":
         upload_html()
     if args.upload_plots:
         upload_to_s3()
+    
     
 
