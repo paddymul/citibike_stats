@@ -101,11 +101,13 @@ def write_station_html(s):
     with open("site_root/stations/s%d.html" % s['id'], "wb") as fh:
         fh.write(output_from_parsed_template.encode('utf-8'))
 
-def write_system_html(s):
+def write_system_html(s, stations_by_id):
     env = Environment(loader=FileSystemLoader('templates'))
     template = env.get_template('index.html')
 
-    output_from_parsed_template = template.render(s=s, sbid=stations_by_id)
+    output_from_parsed_template = template.render(
+        s=s, sbid=stations_by_id, 
+        sbid_json=json.dumps(stations_by_id))
     # to save the results
     with open("site_root/index.html", "wb") as fh:
         fh.write(output_from_parsed_template.encode('utf-8'))
@@ -138,7 +140,7 @@ if __name__ == "__main__":
     #produce_single_summary(448, stations_by_id[448], ss)
     start_dt = dt.datetime.now()
     print "START DT", start_dt
-    write_system_html(s_stats)
+    write_system_html(s_stats, stations_by_id)
     produce_all_summaries()
     end_dt = dt.datetime.now()
     print "END_DT", end_dt, end_dt - start_dt
