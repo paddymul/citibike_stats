@@ -3,7 +3,7 @@ from collections import defaultdict
 import os
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+
 example_stations_by_time = defaultdict(dict)
 def pandas_process_file(
         fname, field_name="availableDocks", 
@@ -159,6 +159,7 @@ class StationSummaries(object):
         self.plot(all_df.cumsum(), "site_root/plots/%d/all_cumsum.png" % station_id)
 
     def plot(self, df, fname):
+        import matplotlib.pyplot as plt
         fig=plt.figure()
         ax = fig.add_subplot(111)
         ax.plot(df.index,df)
