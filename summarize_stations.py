@@ -197,9 +197,10 @@ if __name__ == "__2main__":
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Description of your program')
+    parser.add_argument('-d','--data_collect', default=False, action="store_true",
+                        help='parse all the raw json files into a csv')
     parser.add_argument('-s','--summarize', default=False, action="store_true",
                         help='summarize the stations, build the html files')
-
     parser.add_argument('-p','--plot', default=False, action="store_true",
                         help='construct the plots')
     parser.add_argument('-u','--upload', default=False, action="store_true",
@@ -208,8 +209,10 @@ if __name__ == "__main__":
                         help='upload the site_root to s3, including the plots')
 
     args = parser.parse_args()
-    import pdb
-    #pdb.set_trace()
+
+
+    if args.data_collect:
+        calculate_stats.process_raw_files()
     if args.summarize or args.plot:
 
         stations_by_id = write_data_file()
