@@ -202,7 +202,7 @@ def produce_all_plots():
         except Exception, e:
             print "ERROR with k", k
             print e
-    for chunk in chunks(station_list, 32):
+    for chunk in chunks([v['id' for v in stations_by_id.values()], 32):
         # I want new process pools because _plot leaks memory, a lot
         # this way I let UNIX do garbage collection on the newly created processes
         Pool(8).map(_plot, chunk)
