@@ -143,13 +143,14 @@ class StationSummaries(object):
                          day=now-one_day, week=now-one_week, all=now-all_time)
         stt = self.starting_trips[:now]
         base_starts = dict([[label, stt[time:]] for label, time in time_dict.items()])
-        station_sums = dict([[label, base_starts[label].sum()] for label, time in time_dict.items()])
-        sorted_sums = dict([[k, v.sort(axis=1)] for k,v in station_sums.items()])
+        station_sums = dict([[label, base_starts[label].sum().abs()] for label, time in time_dict.items()])
+        abs_station_sums = dict([[k, v.abs()] for k,v in station_sums.items()])
+        sorted_sums = dict([[k, v.sort(axis=1)] for k,v in abs_station_sums.items()])
         popular_starting_stations = dict(
-            [[k, v.index.tolist()] for k,v in station_sums.items()])
+            [[k, v.index.tolist()] for k,v in abs_station_sums.items()])
         [[k, v.reverse()] for k,v in  popular_starting_stations.items()]
         popular_starting_stations2 = dict(
-                [[k, map(int, v)] for k,v in  popular_starting_stations.items()])
+                [[k, map(abs, map(int, v))] for k,v in  popular_starting_stations.items()])
         summary_stats = dict(
             popular_starting_stations=popular_starting_stations2)
         return summary_stats
