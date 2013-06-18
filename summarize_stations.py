@@ -183,7 +183,7 @@ def produce_all_summaries():
             print e
 
 def _plot(station_data):
-    print station_data['id'], station_data['stAddress1']
+    print station_data['id'], station_data['stAddress1'].encode('utf-8')
     ss.produce_station_plots(station_data['id'])
 
 def chunks(l, n):
@@ -193,16 +193,9 @@ def chunks(l, n):
         yield l[i:i+n]
 
 def produce_all_plots():
-    station_list = []
-    for k,v in stations_by_id.items():
-        if k == 146:
-            continue
-        try:
-            station_list.append(v)
-        except Exception, e:
-            print "ERROR with k", k
-            print e
-    for chunk in chunks([v['id' for v in stations_by_id.values()], 32):
+    #import pdb
+    #pdb.set_trace()
+    for chunk in chunks(stations_by_id.values(), 32):
         # I want new process pools because _plot leaks memory, a lot
         # this way I let UNIX do garbage collection on the newly created processes
         Pool(8).map(_plot, chunk)
