@@ -2,7 +2,7 @@
 from jinja2 import Environment, FileSystemLoader
 import calculate_stats
 import datetime as dt
-
+from multiprocessing import Pool
 from collections import defaultdict
 import json
 
@@ -61,42 +61,36 @@ def distance(lat1, lon1, lat2, lon2):
     d = radius * c
     return d
 
-def upload_to_s3():
-    secret_key = json.loads(open(os.path.expanduser(
-        "~/.ec2/s3_credentials.json")).read())
 
-    conn = S3Connection(*secret_key.items()[0])
-    bucket = conn.get_bucket("citibikedata.com")
+def __upload(fname):
+    k = Key(bucket)
+    k.key = fname[10:]  #strip off the site_root/
+    print fname
+    k.set_contents_from_filename(fname)
+    k.set_acl('public-read')
+    return  k
 
-    walk_obj = os.walk('site_root')
-    for dir_path, unused, filenames in walk_obj:
-        for fname in filenames:
-            full_path = os.path.join(dir_path, fname)
-            k = Key(bucket)
-            k.key = full_path[10:]  #strip off the site_root/
-            print full_path
-            k.set_contents_from_filename(full_path)
-            k.set_acl('public-read')
 
 def upload_html():
-    secret_key = json.loads(open(os.path.expanduser(
-        "~/.ec2/s3_credentials.json")).read())
-
-    conn = S3Connection(*secret_key.items()[0])
-    bucket = conn.get_bucket("citibikedata.com")
-
     walk_obj = os.walk('site_root')
+    all_filenames = []
     for dir_path, unused, filenames in walk_obj:
         for fname in filenames:
-            full_path = os.path.join(dir_path, fname)
-            #only upload the html
-            if 'plots' in full_path:
+            if 'plots' in dir_path:
                 continue
-            k = Key(bucket)
-            k.key = full_path[10:]  #strip off the site_root/
-            print full_path
-            k.set_contents_from_filename(full_path)
-            k.set_acl('public-read')
+            all_filenames.append(os.path.join(dir_path, fname))
+    Pool(100).map(__upload, all_filenames)
+    print "after p.map"
+
+def upload_to_s3():
+    walk_obj = os.walk('site_root')
+    all_filenames = []
+    for dir_path, unused, filenames in walk_obj:
+        for fname in filenames:
+            all_filenames.append(os.path.join(dir_path, fname))
+    Pool(100).map(__upload, all_filenames)
+    print "after p.map"
+
 
 complete_summaries = {}
 
@@ -240,10 +234,17 @@ if __name__ == "__main__":
         ss = calculate_stats.process_dataframe(calculate_stats.grab_existing())
         s_stats = ss.produce_system_stats()
         update_summaries()
+    
     if args.summarize:
         produce_all_summaries()
     if args.plot:
         produce_all_plots()
+    if args.upload or args.upload_plots:
+        secret_key = json.loads(open(os.path.expanduser(
+            "~/.ec2/s3_credentials.json")).read())
+        conn = S3Connection(*secret_key.items()[0])
+        bucket = conn.get_bucket("citibikedata.com")
+
     if args.upload:
         upload_html()
     if args.upload_plots:
