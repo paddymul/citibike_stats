@@ -139,16 +139,11 @@ class StationSummaries(object):
         if not now:
             now = dt.datetime.now()
 
-        base_starts = dict(
-            hour=self.starting_trips[now - one_hour:now],
-            day=self.starting_trips[now - one_day:now],
-            week=self.starting_trips[now-one_week:now],
-            all=self.starting_trips[now-all_time:now])
-        station_sums = dict(
-            #hour= base_starts['hour'].sum(),
-            day=base_starts['day'].sum(),
-            week=base_starts['week'].sum(),
-            all=base_starts['all'].sum())
+        time_dict = dict(#hour=now - one_hour, 
+                         day=now-one_day, week=now-one_week, all=now-all_time)
+        stt = self.starting_trips[:now]
+        base_starts = dict([[label, stt[time:]] for label, time in time_dict.items()])
+        station_sums = dict([[label, base_starts[label].sum()] for label, time in time_dict.items()])
         sorted_sums = dict([[k, v.sort(axis=1)] for k,v in station_sums.items()])
         popular_starting_stations = dict(
             [[k, v.index.tolist()] for k,v in station_sums.items()])
