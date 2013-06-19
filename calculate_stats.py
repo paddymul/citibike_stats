@@ -3,6 +3,9 @@ from collections import defaultdict
 import os
 import pandas as pd
 import numpy as np
+import matplotlib
+matplotlib.use('AGG')
+import matplotlib.pyplot as plt
 
 example_stations_by_time = defaultdict(dict)
 def pandas_process_file(
@@ -166,7 +169,6 @@ class StationSummaries(object):
 
 
     def plot(self, df, fname):
-        import matplotlib.pyplot as plt
         fig=plt.figure()
         ax = fig.add_subplot(111)
         ax.plot(df.index,df)
