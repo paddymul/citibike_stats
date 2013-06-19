@@ -88,7 +88,7 @@ class StationSummaries(object):
     def produce_station_stats(self, station_id, now = False):
         if not now:
             now = dt.datetime.now()
-        start_col = self.starting_trips["%d" % station_id].abs()
+        start_col = self.starting_trips[str(station_id)].abs()
         hour_df = start_col[now - one_hour:now]
         day_df = start_col[now - one_day:now]
         week_df = start_col[now-one_week:now]
@@ -104,8 +104,8 @@ class StationSummaries(object):
     def produce_station_plots(self, station_id, now = False):
         if not now:
             now = dt.datetime.now()
-        start_col = self.starting_trips["%d" % station_id]
-        available_col = self.df["%d" % station_id]
+        start_col = self.starting_trips[str(station_id)]
+        available_col = self.df[str(station_id)]
         
         hour_df = start_col[now - one_hour:now]
         day_df = start_col[now - one_day:now]
@@ -118,23 +118,23 @@ class StationSummaries(object):
         a_week_df = available_col[now-one_week:now]
         a_all_df = available_col[now-all_time:now]
         
-        directory = "site_root/plots/%d" % station_id
+        directory = "site_root/plots/%s" % str(station_id)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        self.plot(hour_df, "site_root/plots/%d/hour.png" % station_id)
-        self.plot(day_df, "site_root/plots/%d/day.png" % station_id)
-        self.plot(week_df, "site_root/plots/%d/week.png" % station_id)
-        self.plot(all_df, "site_root/plots/%d/all.png" % station_id)
+        self.plot(hour_df, "site_root/plots/%s/hour.png" % str(station_id))
+        self.plot(day_df, "site_root/plots/%s/day.png" % str(station_id))
+        self.plot(week_df, "site_root/plots/%s/week.png" % str(station_id))
+        self.plot(all_df, "site_root/plots/%s/all.png" % str(station_id))
 
-        self.plot(a_hour_df, "site_root/plots/%d/avail_hour.png" % station_id)
-        self.plot(a_day_df, "site_root/plots/%d/avail_day.png" % station_id)
-        self.plot(a_week_df, "site_root/plots/%d/avail_week.png" % station_id)
-        self.plot(a_all_df, "site_root/plots/%d/avail_all.png" % station_id)
+        self.plot(a_hour_df, "site_root/plots/%s/avail_hour.png" % str(station_id))
+        self.plot(a_day_df, "site_root/plots/%s/avail_day.png" % str(station_id))
+        self.plot(a_week_df, "site_root/plots/%s/avail_week.png" % str(station_id))
+        self.plot(a_all_df, "site_root/plots/%s/avail_all.png" % str(station_id))
 
-        self.plot(hour_df.cumsum(), "site_root/plots/%d/hour_cumsum.png" % station_id)
-        self.plot(day_df.cumsum(), "site_root/plots/%d/day_cumsum.png" % station_id)
-        self.plot(week_df.cumsum(), "site_root/plots/%d/week_cumsum.png" % station_id)
-        self.plot(all_df.cumsum(), "site_root/plots/%d/all_cumsum.png" % station_id)
+        self.plot(hour_df.cumsum(), "site_root/plots/%s/hour_cumsum.png" % str(station_id))
+        self.plot(day_df.cumsum(), "site_root/plots/%s/day_cumsum.png" % str(station_id))
+        self.plot(week_df.cumsum(), "site_root/plots/%s/week_cumsum.png" % str(station_id))
+        self.plot(all_df.cumsum(), "site_root/plots/%s/all_cumsum.png" % str(station_id))
 
 
     def produce_system_stats(self, now = False):

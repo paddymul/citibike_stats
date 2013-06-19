@@ -183,9 +183,11 @@ def produce_all_summaries():
             print e
 
 def _plot(station_id):
-    #print station_data['id'], station_data['stAddress1'].encode('utf-8')
+    
     try:
+
         ss.produce_station_plots(str(station_id))
+        print station_id, stations_by_id[station_id]['stAddress1'].encode('utf-8')
     except Exception,e:
         print station_id, e
 
