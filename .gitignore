@@ -1,2 +1,3 @@
 *.pyc
-station_html/*
+site_root/stations/*
+site_root/*
