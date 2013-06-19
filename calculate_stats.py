@@ -85,7 +85,7 @@ class StationSummaries(object):
     def produce_station_stats(self, station_id, now = False):
         if not now:
             now = dt.datetime.now()
-        start_col = self.starting_trips["%d" % station_id]
+        start_col = self.starting_trips["%d" % station_id].abs()
         hour_df = start_col[now - one_hour:now]
         day_df = start_col[now - one_day:now]
         week_df = start_col[now-one_week:now]
@@ -145,14 +145,23 @@ class StationSummaries(object):
         base_starts = dict([[label, stt[time:]] for label, time in time_dict.items()])
         station_sums = dict([[label, base_starts[label].sum().abs()] for label, time in time_dict.items()])
         abs_station_sums = dict([[k, v.abs()] for k,v in station_sums.items()])
-        sorted_sums = dict([[k, v.sort(axis=1)] for k,v in abs_station_sums.items()])
+        [[k, v.sort(axis=1)] for k,v in abs_station_sums.items()]
+
         popular_starting_stations = dict(
             [[k, v.index.tolist()] for k,v in abs_station_sums.items()])
         [[k, v.reverse()] for k,v in  popular_starting_stations.items()]
         popular_starting_stations2 = dict(
                 [[k, map(abs, map(int, v))] for k,v in  popular_starting_stations.items()])
-        summary_stats = dict(
+
+
+        total_trips = dict(
+            [[label, base_starts[label].sum().abs().sum()] for label, time in time_dict.items()])
+
+        summary_stats =  dict(
+            total_trips=total_trips,
             popular_starting_stations=popular_starting_stations2)
+
+
         return summary_stats
 
 

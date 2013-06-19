@@ -120,6 +120,12 @@ google.maps.event.addDomListener(window, 'load', initialize);
     </div>
 
     <h1> system summary </h1>
+       <h2> Total trips information </h2>
+       <ul>
+         <li> {{s.total_trips['day']}} trips in last day </li>
+         <li> {{s.total_trips['week']}} trips in last week </li>
+         <li> {{s.total_trips['all']}} trips in all time </li>
+       </ul>
 
 
         <h2> most active stations in past day </h2>
