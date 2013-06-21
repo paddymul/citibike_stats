@@ -213,12 +213,29 @@ def run_from_ipython():
     except NameError:
         return False
 
-if run_from_ipython():
-    stations_by_id = write_data_file()
-    ss = calculate_stats.process_dataframe(calculate_stats.grab_existing())
-    s_stats = ss.produce_system_stats()
-    update_summaries()
 
+s_stats, stations_by_id, ss = [None, None, None]
+def calcs():
+    global s_stats, stations_by_id, ss
+    t1 = dt.datetime.now()
+    print "start write_data_file()"
+    stations_by_id = write_data_file()
+    t2 = dt.datetime.now()
+    print "end write_data_file ", t2 - t1
+
+    existing = calculate_stats.grab_existing()
+    t3 = dt.datetime.now()
+    print "eng grab_exisitng", t3 - t2
+    ss = calculate_stats.process_dataframe(existing)
+    t4 = dt.datetime.now()
+    print "end calculate_stats", t4-t3
+    s_stats = ss.produce_system_stats()
+
+
+
+if run_from_ipython():
+    calcs()
+    update_summaries()
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Description of your program')
     parser.add_argument('-d','--data_collect', default=False, action="store_true",
@@ -243,10 +260,7 @@ if __name__ == "__main__":
     if args.data_collect:
         calculate_stats.process_raw_files()
     if args.summarize or args.plot or args.interactive or args.ever:
-
-        stations_by_id = write_data_file()
-        ss = calculate_stats.process_dataframe(calculate_stats.grab_existing())
-        s_stats = ss.produce_system_stats()
+        calcs()
         update_summaries()
     
     if args.summarize:

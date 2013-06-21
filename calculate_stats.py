@@ -16,37 +16,27 @@ def pandas_process_file(
     for s in stats['stationBeanList']:
         collection_dict[s['id']][et] = s[field_name]
     return stats
-
-
         
 def process_directory(d_name):
     """This function processes all files in a directory that start with stations- and
     returns a dict of dicts suitable for pandas DataFrame ingestion"""
     stations_by_time = defaultdict(dict)
-    #import pdb
-    #pdb.set_trace()
     disregard, disregard2, station_files = os.walk(d_name).next()
 
     for fname in station_files:
         if fname.find('stations-') == -1:
             continue
         full_fname = os.path.join(d_name, fname)
-        
-        #print full_fname,
         try:
             pandas_process_file(full_fname, collection_dict=stations_by_time)
         except Exception, e:
             print e, full_fname
-        
 
     return stations_by_time
-
 
 def process_raw_files():
     # this is the most expedient way to setup the dataframe properly,
     # it's a bit of a hack
-
-    
     df = pd.DataFrame(process_directory(os.path.expanduser('~/data_citibike')))
     df.to_csv('full_data.csv')
     df3 = pd.read_csv('full_data.csv', index_col=0, parse_dates=[0])
