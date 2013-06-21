@@ -213,18 +213,39 @@ def run_from_ipython():
     except NameError:
         return False
 
-if run_from_ipython():
-    stations_by_id = write_data_file()
-    ss = calculate_stats.process_dataframe(calculate_stats.grab_existing())
-    s_stats = ss.produce_system_stats()
-    update_summaries()
 
+s_stats, stations_by_id, ss = [None, None, None]
+def calcs():
+    global s_stats, stations_by_id, ss
+    t1 = dt.datetime.now()
+    print "start write_data_file()"
+    stations_by_id = write_data_file()
+    t2 = dt.datetime.now()
+    print "end write_data_file ", t2 - t1
+
+    existing = calculate_stats.grab_existing()
+    t3 = dt.datetime.now()
+    print "end grab_exisitng", t3 - t2
+
+    ss = calculate_stats.process_dataframe(existing)
+    t4 = dt.datetime.now()
+    print "end calculate_stats", t4-t3
+    s_stats = ss.produce_system_stats()
+    t5 = dt.datetime.now()
+    print "end produce_system_stats", t5 - t4
+
+
+if run_from_ipython():
+    calcs()
+    update_summaries()
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Description of your program')
     parser.add_argument('-d','--data_collect', default=False, action="store_true",
                         help='parse all the raw json files into a csv')
     parser.add_argument('-s','--summarize', default=False, action="store_true",
                         help='summarize the stations, build the html files')
+    parser.add_argument('-e','--ever', default=False, action="store_true",
+                        help='run summarize forever')
     parser.add_argument('-p','--plot', default=False, action="store_true",
                         help='construct the plots')
     parser.add_argument('-u','--upload', default=False, action="store_true",
@@ -240,15 +261,15 @@ if __name__ == "__main__":
 
     if args.data_collect:
         calculate_stats.process_raw_files()
-    if args.summarize or args.plot or args.interactive:
-
-        stations_by_id = write_data_file()
-        ss = calculate_stats.process_dataframe(calculate_stats.grab_existing())
-        s_stats = ss.produce_system_stats()
+    if args.summarize or args.plot or args.interactive or args.ever:
+        calcs()
         update_summaries()
     
     if args.summarize:
         produce_all_summaries()
+    if args.ever:
+        while True:
+            produce_all_summaries()
     if args.plot:
         produce_all_plots()
     if args.upload or args.upload_plots:
