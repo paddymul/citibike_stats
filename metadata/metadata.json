@@ -1,1 +1,1 @@
-{"public": true, "notebooks": ["estimate_usage.ipynb", "ziopro_questions.ipynb"], "envfile": null, "description": "work on estimating the usage of citibike stations", "name": "estimate_usage"}
+{"notebooks": ["estimate_usage.ipynb", "ziopro_questions.ipynb"], "envfile": null, "public": true, "name": "estimate_usage", "description": "work on estimating the usage of citibike stations"}
