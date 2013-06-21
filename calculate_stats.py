@@ -40,17 +40,17 @@ def process_raw_files():
     df = pd.DataFrame(process_directory(os.path.expanduser('~/data_citibike')))
     df.to_csv('full_data.csv')
     df3 = pd.read_csv('full_data.csv', index_col=0, parse_dates=[0])
-    store = pd.HDFStore('store')
+    store = pd.HDFStore('store.comp.h5', complevel=9, complib='blosc')
     store['df'] = df3
     store.flush()
     store.close()
     return df3
 
 def grab_existing():
-    store = pd.HDFStore('store')
+    store = pd.HDFStore('store.comp.h5')
     df = store['df']
     store.close()
-    returndf
+    return df
 
 def process_dataframe(input_df):
     print "start process_dataframe", dt.datetime.now()
