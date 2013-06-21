@@ -144,8 +144,8 @@ def write_system_html(s, stations_by_id):
     template = env.get_template('index.html')
 
     output_from_parsed_template = template.render(
-        s=s, sbid=stations_by_id, 
-        sbid_json=json.dumps(stations_by_id))
+        s=s, sbid=stations_by_id)
+    #sbid_json=json.dumps(stations_by_id))
     # to save the results
     with open("site_root/index.html", "wb") as fh:
         fh.write(output_from_parsed_template.encode('utf-8'))
