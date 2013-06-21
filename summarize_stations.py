@@ -225,6 +225,8 @@ if __name__ == "__main__":
                         help='parse all the raw json files into a csv')
     parser.add_argument('-s','--summarize', default=False, action="store_true",
                         help='summarize the stations, build the html files')
+    parser.add_argument('-e','--ever', default=False, action="store_true",
+                        help='run summarize forever')
     parser.add_argument('-p','--plot', default=False, action="store_true",
                         help='construct the plots')
     parser.add_argument('-u','--upload', default=False, action="store_true",
@@ -240,7 +242,7 @@ if __name__ == "__main__":
 
     if args.data_collect:
         calculate_stats.process_raw_files()
-    if args.summarize or args.plot or args.interactive:
+    if args.summarize or args.plot or args.interactive or args.ever:
 
         stations_by_id = write_data_file()
         ss = calculate_stats.process_dataframe(calculate_stats.grab_existing())
@@ -249,6 +251,9 @@ if __name__ == "__main__":
     
     if args.summarize:
         produce_all_summaries()
+    if args.ever:
+        while True:
+            produce_all_summaries()
     if args.plot:
         produce_all_plots()
     if args.upload or args.upload_plots:
