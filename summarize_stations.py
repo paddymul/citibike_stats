@@ -225,12 +225,14 @@ def calcs():
 
     existing = calculate_stats.grab_existing()
     t3 = dt.datetime.now()
-    print "eng grab_exisitng", t3 - t2
+    print "end grab_exisitng", t3 - t2
+
     ss = calculate_stats.process_dataframe(existing)
     t4 = dt.datetime.now()
     print "end calculate_stats", t4-t3
     s_stats = ss.produce_system_stats()
-
+    t5 = dt.datetime.now()
+    print "end produce_system_stats", t5 - t4
 
 
 if run_from_ipython():
