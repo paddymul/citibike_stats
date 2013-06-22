@@ -31,8 +31,46 @@ def process_directory(d_name):
             pandas_process_file(full_fname, collection_dict=stations_by_time)
         except Exception, e:
             print e, full_fname
-
     return stations_by_time
+
+DATA_DIR= os.path.expanduser('~/data_citibike')
+def files_newer_than(start_time, dir_path):
+    t1 = dt.datetime.now()
+    fname_list = []
+    for fname in os.listdir(dir_path):
+        full_path = dir_path + fname
+        mtime = dt.datetime.fromtimestamp(os.stat(full_path).st_mtime)
+        if mtime > start_time:
+            fname_list.append(full_path)
+    return fname_list
+
+def process_newer_files(start_time, dir_path):
+    """This function processes all files in a directory that start with stations- and
+    returns a dict of dicts suitable for pandas DataFrame ingestion"""
+    stations_by_time = defaultdict(dict)
+
+    for fname in files_newer_than(start_time, dir_path):
+        if fname.find('stations-') == -1:
+            continue
+        try:
+            pandas_process_file(fname, collection_dict=stations_by_time)
+        except Exception, e:
+            print e, fname
+    return stations_by_time
+
+def update_df(df):
+    df2 = pd.DataFrame(process_newer_files(df.index[-1], DATA_DIR))
+    df2.to_csv('most_recent.csv')
+    df3 = pd.read_csv('most_recent.csv', index_col=0, parse_dates=[0])
+    df3.sort()
+    complete_df = df + df3
+    complete_df.sort()
+    store = pd.HDFStore('store.comp.h5', complevel=9, complib='blosc')
+    store['df'] = complete_df()
+    store.flush()
+    store.close()
+    return complete_df
+
 
 def process_raw_files():
     # this is the most expedient way to setup the dataframe properly,
@@ -61,9 +99,9 @@ def process_dataframe(input_df):
     diff_df = df.diff()
     print "after diff", dt.datetime.now()
     starting_trips = diff_df.where(diff_df < 0).fillna(0)
-    starting_summaries = starting_trips.sum(axis=1)
+    #starting_summaries = starting_trips.sum(axis=1)
     ending_trips = diff_df.where(diff_df > 0).fillna(0)
-    ending_summaries = ending_trips.sum(axis=1)
+    #ending_summaries = ending_trips.sum(axis=1)
 
     print "after trips_calcs", dt.datetime.now()
     return StationSummaries(df, diff_df, starting_trips, ending_trips)

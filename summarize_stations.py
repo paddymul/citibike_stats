@@ -244,6 +244,10 @@ if __name__ == "__main__":
                         help='parse all the raw json files into a csv')
     parser.add_argument('-s','--summarize', default=False, action="store_true",
                         help='summarize the stations, build the html files')
+
+    parser.add_argument('-a','--update', default=False, action="store_true",
+                        help='construct a new dataframe with newly modified files')
+
     parser.add_argument('-e','--ever', default=False, action="store_true",
                         help='run summarize forever')
     parser.add_argument('-p','--plot', default=False, action="store_true",
@@ -259,8 +263,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
 
+
     if args.data_collect:
         calculate_stats.process_raw_files()
+    if args.update:
+        existing = calculate_stats.grab_existing()
+        existing2 = calculate_stats.update_df(existing)
+
+        
     if args.summarize or args.plot or args.interactive or args.ever:
         calcs()
         update_summaries()
