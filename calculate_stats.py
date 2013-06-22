@@ -59,6 +59,8 @@ def process_newer_files(start_time, dir_path):
     return stations_by_time
 
 def update_df(df):
+    from boto.s3.key import Key
+    import json, os
     df2 = pd.DataFrame(process_newer_files(df.index[-1], DATA_DIR))
     df2.to_csv('most_recent.csv')
     df3 = pd.read_csv('most_recent.csv', index_col=0, parse_dates=[0])
@@ -69,6 +71,17 @@ def update_df(df):
     store['df'] = complete_df
     store.flush()
     store.close()
+    from boto.s3.connection import S3Connection
+    import json
+    secret_key = json.loads(open(os.path.expanduser(
+            "~/.ec2/s3_credentials.json")).read())
+    conn = S3Connection(*secret_key.items()[0])
+    bucket = conn.get_bucket("citibikedata.com")
+    k = Key(bucket)
+    k.key = 'store.comp.h5'
+    k.set_contents_from_filename('store.comp.h5')
+    k.set_acl('public-read')
+    
     return complete_df
 
 
