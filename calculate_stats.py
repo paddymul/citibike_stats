@@ -97,7 +97,14 @@ def process_raw_files():
     store.close()
     return df3
 
-def grab_existing():
+def grab_existing(force=False):
+    import requests
+    if force:
+        r = requests.get("http://citibikedata.com/store.comp.h5")
+        if r.status_code == 200:
+            with open('store.comp.h5', 'wb') as f:
+                for chunk in r.iter_content():
+                    f.write(chunk)
     store = pd.HDFStore('store.comp.h5')
     df = store['df']
     store.close()
