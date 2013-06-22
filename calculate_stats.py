@@ -106,7 +106,9 @@ def grab_existing(force=False):
             with open('store.comp.h5', 'wb') as f:
                 for chunk in r.iter_content(1024):
                     f.write(chunk)
-    store = pd.HDFStore('store.comp.h5')
+        store = pd.HDFStore('store.comp.h5')
+    else:
+        store = pd.HDFStore('example_store.comp.h5')
     df = store['df']
     store.close()
     return df
