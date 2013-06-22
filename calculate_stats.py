@@ -101,7 +101,7 @@ def process_raw_files():
 def grab_existing(force=False):
     import requests
     if force:
-        r = requests.get("http://citibikedata.com/store.comp.h5", prefetch=False)
+        r = requests.get("http://citibikedata.com/store.comp.h5")
         if r.status_code == 200:
             with open('store.comp.h5', 'wb') as f:
                 for chunk in r.iter_content(1024):
