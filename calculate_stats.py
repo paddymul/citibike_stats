@@ -33,7 +33,7 @@ def process_directory(d_name):
             print e, full_fname
     return stations_by_time
 
-DATA_DIR= os.path.expanduser('~/data_citibike')
+DATA_DIR= os.path.expanduser('~/data_citibike/')
 def files_newer_than(start_time, dir_path):
     t1 = dt.datetime.now()
     fname_list = []
@@ -66,7 +66,7 @@ def update_df(df):
     complete_df = df + df3
     complete_df.sort()
     store = pd.HDFStore('store.comp.h5', complevel=9, complib='blosc')
-    store['df'] = complete_df()
+    store['df'] = complete_df
     store.flush()
     store.close()
     return complete_df
