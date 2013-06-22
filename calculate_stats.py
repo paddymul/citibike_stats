@@ -34,6 +34,7 @@ def process_directory(d_name):
     return stations_by_time
 
 DATA_DIR= os.path.expanduser('~/data_citibike/')
+
 def files_newer_than(start_time, dir_path):
     t1 = dt.datetime.now()
     fname_list = []
@@ -46,7 +47,7 @@ def files_newer_than(start_time, dir_path):
 
 def process_newer_files(start_time, dir_path):
     """This function processes all files in a directory that start with stations- and
-    returns a dict of dicts suitable for pandas DataFrame ingestion"""
+    returns a dict of dicts suitable for pandas DataFrame ingestion""" 
     stations_by_time = defaultdict(dict)
 
     for fname in files_newer_than(start_time, dir_path):
@@ -100,10 +101,10 @@ def process_raw_files():
 def grab_existing(force=False):
     import requests
     if force:
-        r = requests.get("http://citibikedata.com/store.comp.h5")
+        r = requests.get("http://citibikedata.com/store.comp.h5", prefetch=False)
         if r.status_code == 200:
             with open('store.comp.h5', 'wb') as f:
-                for chunk in r.iter_content():
+                for chunk in r.iter_content(1024):
                     f.write(chunk)
     store = pd.HDFStore('store.comp.h5')
     df = store['df']
