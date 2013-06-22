@@ -128,10 +128,12 @@ google.maps.event.addDomListener(window, 'load', initialize);
             <div style="display:none" class="station" id="s{{station_id}}">
               <a href="/stations/s{{station_id}}.html"> {{sbid[station_id]['stAddress1']}}</a>
               <dl>
-                <dt>starting trips this hour</dt><dd>{{sbid[station_id]['hour_starting_trips']}}</dd>
-                <dt>starting trips this day</dt><dd>{{sbid[station_id]['day_starting_trips']}}</dd>
-                <dt>starting trips this week</dt><dd>{{sbid[station_id]['week_starting_trips']}}</dd>
-                <dt>starting trips all time</dt><dd>{{sbid[station_id]['all_time_starting_trips']}}</dd>
+                
+                <dt>starting trips this hour</dt><dd>{{sbid[station_id].get('starting',{}).get('hour')}}</dd>
+                <dt>starting trips this day</dt><dd>{{sbid[station_id].get('starting',{}).get('day')}}</dd>
+
+                <dt>starting trips this week</dt><dd>{{sbid[station_id].get('starting',{}).get('week')}}</dd>
+                <dt>starting trips all time</dt><dd>{{sbid[station_id].get('starting',{}).get('all')}}</dd>
                 <dt>lat</dt><dd>{{sbid[station_id]['latitude']}}</dd>
                 <dt>long</dt><dd>{{sbid[station_id]['longitude']}}</dd>
               </dl>
