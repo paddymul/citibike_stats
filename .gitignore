@@ -1,3 +1,4 @@
 *.pyc
 site_root/stations/*
 site_root/*
+store.comp.h5
