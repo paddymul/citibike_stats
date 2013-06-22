@@ -175,7 +175,7 @@ class StationSummaries(object):
         if not now:
             now = dt.datetime.now()
 
-        time_dict = dict(#hour=now - one_hour, 
+        time_dict = dict(hour=now - one_hour, 
                          day=now-one_day, week=now-one_week, all=now-all_time)
         stt = self.starting_trips[:now]
         base_starts = dict([[label, stt[time:]] for label, time in time_dict.items()])

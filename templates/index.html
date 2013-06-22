@@ -149,6 +149,7 @@ google.maps.event.addDomListener(window, 'load', initialize);
       <div class="span8" style="border:1px solid red">
         <ul class="nav nav-tabs">
           <li><a href="#map" data-toggle="tab">Map</a></li>
+          <li><a href="#hour" data-toggle="tab">Hour</a></li>
           <li><a href="#day" data-toggle="tab">Day</a></li>
           <li><a href="#week" data-toggle="tab">Week</a></li>
           <li><a href="#all" data-toggle="tab">All time</a></li>
@@ -157,6 +158,20 @@ google.maps.event.addDomListener(window, 'load', initialize);
           <div class="tab-pane active" id="map">
             <div id="map-canvas" style="width: 610px; height: 700px;" ></div>
           </div>
+          <div class="tab-pane" id="hour">
+            <h2> most active stations in past hour </h2>
+            <ul>
+              {% for station_id in s.popular_starting_stations['hour'][:10] %}
+                {% if sbid[station_id] is defined %}
+                  <li>
+                    <a href="/stations/s{{station_id}}.html">{{sbid[station_id]['stAddress1']}}</a>
+                     {{sbid[station_id]['starting']['hour']}} <span> trips </span>
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          </div> <!-- end hour -->
+
           <div class="tab-pane" id="day">
             <h2> most active stations in past day </h2>
             <ul>
