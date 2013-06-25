@@ -3,6 +3,7 @@ from collections import defaultdict
 import os
 import pandas as pd
 import numpy as np
+import dateutil 
 import matplotlib
 matplotlib.use('AGG')
 import matplotlib.pyplot as plt
@@ -59,30 +60,36 @@ def process_newer_files(start_time, dir_path):
             print e, fname
     return stations_by_time
 
-def update_df(df):
+
+def upload_df(df):
     from boto.s3.key import Key
     import json, os
-    df2 = pd.DataFrame(process_newer_files(df.index[-1], DATA_DIR))
-    df2.to_csv('most_recent.csv')
-    df3 = pd.read_csv('most_recent.csv', index_col=0, parse_dates=[0])
-    df3.sort()
-    complete_df = df + df3
-    complete_df.sort()
-    store = pd.HDFStore('store.comp.h5', complevel=9, complib='blosc')
-    store['df'] = complete_df
-    store.flush()
-    store.close()
     from boto.s3.connection import S3Connection
-    import json
     secret_key = json.loads(open(os.path.expanduser(
             "~/.ec2/s3_credentials.json")).read())
+    
+    store = pd.HDFStore('store.comp.h5', complevel=9, complib='blosc')
+    store['df'] = df
+    store.flush()
+    store.close()
     conn = S3Connection(*secret_key.items()[0])
     bucket = conn.get_bucket("citibikedata.com")
     k = Key(bucket)
     k.key = 'store.comp.h5'
     k.set_contents_from_filename('store.comp.h5')
     k.set_acl('public-read')
-    
+
+def update_df(df):
+    from boto.s3.key import Key
+    import json, os
+    df2 = pd.DataFrame(process_newer_files(df.index[-1], DATA_DIR))
+    df2.index = df2.index.map(dateutil.parser.parse)
+    #df2.to_csv('most_recent.csv')
+    #df3 = pd.read_csv('most_recent.csv', index_col=0, parse_dates=[0])
+    df2.sort()
+    complete_df = pd.concat(df, df2)
+    complete_df.sort()
+    upload_df(complete_df)
     return complete_df
 
 
@@ -90,13 +97,14 @@ def process_raw_files():
     # this is the most expedient way to setup the dataframe properly,
     # it's a bit of a hack
     df = pd.DataFrame(process_directory(os.path.expanduser('~/data_citibike')))
-    df.to_csv('full_data.csv')
-    df3 = pd.read_csv('full_data.csv', index_col=0, parse_dates=[0])
+    df.index = df.index.map(dateutil.parser.parse)
+    #df.to_csv('full_data.csv')
+    #df3 = pd.read_csv('full_data.csv', index_col=0, parse_dates=[0])
     store = pd.HDFStore('store.comp.h5', complevel=9, complib='blosc')
-    store['df'] = df3
+    store['df'] = df
     store.flush()
     store.close()
-    return df3
+    return df
 
 def grab_existing(force=False):
     import requests
@@ -108,7 +116,9 @@ def grab_existing(force=False):
                     f.write(chunk)
         store = pd.HDFStore('store.comp.h5')
     else:
-        store = pd.HDFStore('example_store.comp.h5')
+        #store = pd.HDFStore('example_store.comp.h5')
+        store = pd.HDFStore('store.comp.h5')
+
     df = store['df']
     store.close()
     return df
