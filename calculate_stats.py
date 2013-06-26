@@ -8,6 +8,9 @@ import matplotlib
 matplotlib.use('AGG')
 import matplotlib.pyplot as plt
 
+DATA_DIR= os.path.expanduser('~/data_citibike/')
+
+
 example_stations_by_time = defaultdict(dict)
 def pandas_process_file(
         fname, field_name="availableDocks", 
@@ -18,13 +21,17 @@ def pandas_process_file(
         collection_dict[s['id']][et] = s[field_name]
     return stats
         
-def process_directory(d_name):
+def process_directory(d_name, limit=False):
     """This function processes all files in a directory that start with stations- and
     returns a dict of dicts suitable for pandas DataFrame ingestion"""
     stations_by_time = defaultdict(dict)
     disregard, disregard2, station_files = os.walk(d_name).next()
-
-    for fname in station_files:
+    if not limit:
+        limit = len(station_files)
+    count = 0
+    for fname in station_files[:limit]:
+        count += 1
+        print count, limit
         if fname.find('stations-') == -1:
             continue
         full_fname = os.path.join(d_name, fname)
@@ -33,8 +40,6 @@ def process_directory(d_name):
         except Exception, e:
             print e, full_fname
     return stations_by_time
-
-DATA_DIR= os.path.expanduser('~/data_citibike/')
 
 def files_newer_than(start_time, dir_path):
     t1 = dt.datetime.now()
@@ -46,12 +51,15 @@ def files_newer_than(start_time, dir_path):
             fname_list.append(full_path)
     return fname_list
 
-def process_newer_files(start_time, dir_path):
+def process_newer_files(start_time, dir_path, limit=False):
     """This function processes all files in a directory that start with stations- and
     returns a dict of dicts suitable for pandas DataFrame ingestion""" 
     stations_by_time = defaultdict(dict)
-
-    for fname in files_newer_than(start_time, dir_path):
+    files = files_newer_than(start_time, dir_path)
+    if not limit:
+        limit = len(files)
+    
+    for fname in files[:limit]:
         if fname.find('stations-') == -1:
             continue
         try:
@@ -67,25 +75,31 @@ def upload_df(df):
     from boto.s3.connection import S3Connection
     secret_key = json.loads(open(os.path.expanduser(
             "~/.ec2/s3_credentials.json")).read())
-    
-    store = pd.HDFStore('store.comp.h5', complevel=9, complib='blosc')
-    store['df'] = df
-    store.flush()
-    store.close()
     conn = S3Connection(*secret_key.items()[0])
+    save_df(df)
+
     bucket = conn.get_bucket("citibikedata.com")
     k = Key(bucket)
     k.key = 'store.comp.h5'
     k.set_contents_from_filename('store.comp.h5')
     k.set_acl('public-read')
 
+def save_df(df, path='store.comp.h5'):
+    store = pd.HDFStore(path, complevel=9, complib='blosc')
+    store['df'] = df
+    store.flush()
+    store.close()
+    return df
+
 def update_df(df):
     import json, os
-    df2 = pd.DataFrame(process_newer_files(df.index[-1], DATA_DIR))
+    df2 = pd.DataFrame(process_newer_files(df.index[-1], DATA_DIR, 200))
     df2.index = df2.index.map(dateutil.parser.parse)
     #df2.to_csv('most_recent.csv')
     #df3 = pd.read_csv('most_recent.csv', index_col=0, parse_dates=[0])
     df3 = df2.sort_index()
+    import pdb
+    pdb.set_trace()
     complete_df = pd.concat(df, df2)
     complete_df.sort()
     upload_df(complete_df)
@@ -93,19 +107,15 @@ def update_df(df):
 
 
 def process_raw_files():
-    # this is the most expedient way to setup the dataframe properly,
-    # it's a bit of a hack
-    df = pd.DataFrame(process_directory(os.path.expanduser('~/data_citibike')))
+    raw_dict = process_directory(os.path.expanduser(DATA_DIR), 200)
+    df = pd.DataFrame(raw_dict)
+    import pdb
+    pdb.set_trace()
     df.index = df.index.map(dateutil.parser.parse)
     df = df.sort_index()
-    #df.to_csv('full_data.csv')
-    #df3 = pd.read_csv('full_data.csv', index_col=0, parse_dates=[0])
-    store = pd.HDFStore('store.comp.h5', complevel=9, complib='blosc')
-    store['df'] = df
-    store.flush()
-    store.close()
+    save_df(df)
     return df
-
+    
 def grab_existing(force=False):
     import requests
     if force:
