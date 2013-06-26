@@ -80,13 +80,12 @@ def upload_df(df):
     k.set_acl('public-read')
 
 def update_df(df):
-    from boto.s3.key import Key
     import json, os
     df2 = pd.DataFrame(process_newer_files(df.index[-1], DATA_DIR))
     df2.index = df2.index.map(dateutil.parser.parse)
     #df2.to_csv('most_recent.csv')
     #df3 = pd.read_csv('most_recent.csv', index_col=0, parse_dates=[0])
-    df2.sort()
+    df3 = df2.sort_index()
     complete_df = pd.concat(df, df2)
     complete_df.sort()
     upload_df(complete_df)
@@ -98,6 +97,7 @@ def process_raw_files():
     # it's a bit of a hack
     df = pd.DataFrame(process_directory(os.path.expanduser('~/data_citibike')))
     df.index = df.index.map(dateutil.parser.parse)
+    df = df.sort_index()
     #df.to_csv('full_data.csv')
     #df3 = pd.read_csv('full_data.csv', index_col=0, parse_dates=[0])
     store = pd.HDFStore('store.comp.h5', complevel=9, complib='blosc')
