@@ -223,7 +223,7 @@ def calcs():
     t2 = dt.datetime.now()
     print "end write_data_file ", t2 - t1
 
-    existing = calculate_stats.grab_existing()
+    existing = calculate_stats.grab_existing(True)
     t3 = dt.datetime.now()
     print "end grab_exisitng", t3 - t2
 

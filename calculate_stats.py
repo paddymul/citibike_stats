@@ -9,6 +9,7 @@ matplotlib.use('AGG')
 import matplotlib.pyplot as plt
 
 DATA_DIR= os.path.expanduser('~/data_citibike/')
+LIMIT=False
 
 example_stations_by_time = defaultdict(dict)
 def pandas_process_file(
@@ -28,7 +29,7 @@ def process_file_list(f_list, limit=False):
     count = 0
     for fname in f_list[:limit]:
         count += 1
-        print count, limit
+        #print count, limit
         if fname.find('stations-') == -1:
             continue
         try:
@@ -83,24 +84,21 @@ def save_df(df, path='store.comp.h5'):
 
 def update_df(df):
     import json, os
-    df2 = pd.DataFrame(process_newer_files(df.index[-1], DATA_DIR, 200))
+    df2 = pd.DataFrame(process_newer_files(df.index[-1], DATA_DIR, LIMIT))
     df2.index = df2.index.map(dateutil.parser.parse)
     #df2.to_csv('most_recent.csv')
     #df3 = pd.read_csv('most_recent.csv', index_col=0, parse_dates=[0])
     df3 = df2.sort_index()
-    import pdb
-    pdb.set_trace()
-    complete_df = pd.concat(df, df2)
+    print "new_df has %r items" % df2.ix
+    complete_df = pd.concat([df, df2])
     complete_df.sort()
     upload_df(complete_df)
     return complete_df
 
 
 def process_raw_files():
-    raw_dict = process_directory(os.path.expanduser(DATA_DIR), 200)
+    raw_dict = process_directory(os.path.expanduser(DATA_DIR), LIMIT)
     df = pd.DataFrame(raw_dict)
-    import pdb
-    pdb.set_trace()
     df.index = df.index.map(dateutil.parser.parse)
     df = df.sort_index()
     save_df(df)
@@ -154,7 +152,7 @@ class StationSummaries(object):
     def produce_station_stats(self, station_id, now = False):
         if not now:
             now = dt.datetime.now()
-        start_col = self.starting_trips[str(station_id)].abs()
+        start_col = self.starting_trips.get(station_id).abs()
         hour_df = start_col[now - one_hour:now]
         day_df = start_col[now - one_day:now]
         week_df = start_col[now-one_week:now]
