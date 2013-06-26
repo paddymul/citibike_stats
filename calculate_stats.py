@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 
 DATA_DIR= os.path.expanduser('~/data_citibike/')
 
-
 example_stations_by_time = defaultdict(dict)
 def pandas_process_file(
         fname, field_name="availableDocks", 
@@ -20,27 +19,30 @@ def pandas_process_file(
     for s in stats['stationBeanList']:
         collection_dict[s['id']][et] = s[field_name]
     return stats
-        
-def process_directory(d_name, limit=False):
-    """This function processes all files in a directory that start with stations- and
-    returns a dict of dicts suitable for pandas DataFrame ingestion"""
+
+def process_file_list(f_list, limit=False):
     stations_by_time = defaultdict(dict)
-    disregard, disregard2, station_files = os.walk(d_name).next()
+
     if not limit:
-        limit = len(station_files)
+        limit = len(f_list)
     count = 0
-    for fname in station_files[:limit]:
+    for fname in f_list[:limit]:
         count += 1
         print count, limit
         if fname.find('stations-') == -1:
             continue
-        full_fname = os.path.join(d_name, fname)
         try:
-            pandas_process_file(full_fname, collection_dict=stations_by_time)
+            pandas_process_file(fname, collection_dict=stations_by_time)
         except Exception, e:
-            print e, full_fname
+            print e, fname
     return stations_by_time
 
+def process_directory(d_name, limit=False):
+    """This function processes all files in a directory that start with stations- and
+    returns a dict of dicts suitable for pandas DataFrame ingestion"""
+    disregard, disregard2, station_files = os.walk(d_name).next()
+    return process_file_list(map(lambda x: os.path.join(d_name, x), station_files), limit)
+    
 def files_newer_than(start_time, dir_path):
     t1 = dt.datetime.now()
     fname_list = []
@@ -54,20 +56,8 @@ def files_newer_than(start_time, dir_path):
 def process_newer_files(start_time, dir_path, limit=False):
     """This function processes all files in a directory that start with stations- and
     returns a dict of dicts suitable for pandas DataFrame ingestion""" 
-    stations_by_time = defaultdict(dict)
     files = files_newer_than(start_time, dir_path)
-    if not limit:
-        limit = len(files)
-    
-    for fname in files[:limit]:
-        if fname.find('stations-') == -1:
-            continue
-        try:
-            pandas_process_file(fname, collection_dict=stations_by_time)
-        except Exception, e:
-            print e, fname
-    return stations_by_time
-
+    return process_file_list(files, limit)
 
 def upload_df(df):
     from boto.s3.key import Key
